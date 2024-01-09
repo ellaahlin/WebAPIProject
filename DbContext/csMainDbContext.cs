@@ -19,6 +19,15 @@ public class csMainDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     static public string Hello { get; } = $"Hello from namespace {nameof(DbContext)}, class {nameof(csMainDbContext)}";
 
+    #region C# model of database tables or views
+    public DbSet<csAttractionDbM> Attractions { get; set; }
+    public DbSet<csCityDbM> Cities { get; set; }
+    public DbSet<csCommentDbM> Comments { get; set; }
+
+    //Users for login
+    public DbSet<csUserDbM> Users { get; set; }
+    #endregion
+
     #region get right context from DbSet configuration in json file and UserLogin
     public static DbContextOptionsBuilder<csMainDbContext> DbContextOptions(DbLoginDetail loginDetail)
     {
@@ -65,6 +74,50 @@ public class csMainDbContext : Microsoft.EntityFrameworkCore.DbContext
     //Here we can modify the migration building
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        #region model the Views
+        //Notice HasNoKey() and the empty maigration (no need for database update)
+        modelBuilder.Entity<gstusrInfoDbDto>().ToView("vwInfoDb", "gstusr").HasNoKey();
+        modelBuilder.Entity<gstusrInfoAttractionsDto>().ToView("vwInfoAttractions", "gstusr").HasNoKey();
+        modelBuilder.Entity<gstusrInfoCitiesDto>().ToView("vwInfoCities", "gstusr").HasNoKey();
+        modelBuilder.Entity<gstusrInfoCommentsDto>().ToView("vwInfoComments", "gstusr").HasNoKey();
+        #endregion
+        /*
+        modelBuilder.Entity<List<IComment>>()
+            .HasNoKey();
+
+        modelBuilder.Entity("DbModels.csCommentDbM", b =>
+        {
+            b.HasOne("DbModels.csAttractionDbM", "AttractionDbM")
+                .WithMany("CommentsDbM")
+                .HasForeignKey("AttractionId")
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.Navigation("AttractionDbM");
+        });
+
+        modelBuilder.Entity("DbModels.csAttractionDbM", b =>
+        {
+            b.HasOne("DbModels.csCityDbM", "CityDbM")
+                .WithMany("AttractionDbM")
+                .HasForeignKey("CityId")
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.Navigation("CityDbM");
+        });*/
+        
+        modelBuilder.Entity<csCommentDbM>()
+            .HasOne(p => p.UserDbM)
+            .WithMany(b => b.CommentsDbM)
+            .HasForeignKey(p => p.UserId)
+            .IsRequired(true); // if you want to keep UserID as nullable
+
+        modelBuilder.Entity<csCommentDbM>()
+            .HasOne(p => p.AttractionDbM)
+            .WithMany(b => b.CommentsDbM)
+            .HasForeignKey(p => p.AttractionID)
+            .IsRequired(true); // if you want to keep AttractionID as nullable
+        
         base.OnModelCreating(modelBuilder);
     }
 

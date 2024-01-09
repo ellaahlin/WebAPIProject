@@ -8,7 +8,7 @@ On macOS in the terminal, type below commands. After each migration you will get
 Use command depending on your database.
 
 SQLServer:
-dotnet ef migrations add initial_migration --context SqlServerDbContext --output-dir Migrations/SqlServerDbContext
+dotnet ef migrations add initial__migratioons --context SqlServerDbContext --output-dir Migrations/SqlServerDbContext
 
 MariaDb:
 dotnet ef migrations add initial_migration --context MySqlDbContext --output-dir Migrations/MySqlMigrations

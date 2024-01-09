@@ -3,46 +3,59 @@ namespace Models.DTO
 {
 	public class gstusrInfoDbDto
 	{
-        public int nrSeededFriends { get; set; } = 0;
-        public int nrUnseededFriends { get; set; } = 0;
-        public int nrFriendsWithAddress { get; set; } = 0;
+        public int nrSeededAttractions { get; set; } = 0;
+        public int nrUnseededAttractions { get; set; } = 0;
+        public int nrAttractionsWithComment { get; set; } = 0;
 
-        public int nrSeededAddresses { get; set; } = 0;
-        public int nrUnseededAddresses { get; set; } = 0;
+        public int nrSeededComments { get; set; } = 0;
+        public int nrUnseededComments { get; set; } = 0;
 
-        public int nrSeededPets { get; set; } = 0;
-        public int nrUnseededPets { get; set; } = 0;
+        public int nrSeededCities { get; set; } = 0;
+        public int nrUnseededCities { get; set; } = 0;
 
-        public int nrSeededQuotes { get; set; } = 0;
-        public int nrUnseededQuotes { get; set; } = 0;
+        public int nrSeededTitles { get; set; } = 0;
+        public int nrUnseededTitles { get; set; } = 0;
+
+        public int nrSeededDescriptions { get; set; } = 0;
+        public int nrUnseededDescriptions { get; set; } = 0;
+
+        public int nrSeededUsers { get; set; } = 0;
+        public int nrUnseededUsers { get; set; } = 0;
     }
 
-    public class gstusrInfoFriendsDto
+    public class gstusrInfoAttractionsDto
     {
         public string Country { get; set; } = null;
         public string City { get; set; } = null;
-        public int NrFriends { get; set; } = 0;
+        public int NrAttractions { get; set; } = 0;
     }
 
-    public class gstusrInfoPetsDto
+    public class gstusrInfoCitiesDto
     {
         public string Country { get; set; } = null;
         public string City { get; set; } = null;
-        public int NrPets { get; set; } = 0;
+        public int NrCities { get; set; } = 0;
     }
 
-    public class gstusrInfoQuotesDto
+    public class gstusrInfoCommentsDto
     {
-        public string Author { get; set; } = null;
-        public int NrQuotes { get; set; } = 0;
+        public string Comment { get; set; } = null;
+        public int NrComments { get; set; } = 0;
+    }
+
+    public class gstusrInfoUsersDto
+    {
+        public string User { get; set; } = null;
+        public int NrUsers { get; set; } = 0;
     }
 
     public class gstusrInfoAllDto
     {
         public gstusrInfoDbDto Db { get; set; } = null;
-        public List<gstusrInfoFriendsDto> Friends { get; set; } = null;
-        public List<gstusrInfoPetsDto> Pets { get; set; } = null;
-        public List<gstusrInfoQuotesDto> Quotes { get; set; } = null;
+        public List<gstusrInfoAttractionsDto> Attractions { get; set; } = null;
+        public List<gstusrInfoCitiesDto> Cities { get; set; } = null;
+        public List<gstusrInfoCommentsDto> Comments { get; set; } = null;
+        public List<gstusrInfoUsersDto> Users { get; set; } = null;
     }
 }
 

@@ -5,6 +5,7 @@ using Azure.Security.KeyVault.Secrets;
 
 //Configuration namespace is base layer
 //used for all classed needed to configure the application and it's components
+// Configuration består av EN enda klass
 namespace Configuration;
 
 //csAppConfig will contain all configuration in our example
@@ -43,8 +44,9 @@ public sealed class csAppConfig
 
         string s = Directory.GetCurrentDirectory();
 
-        //Create final ConfigurationRoot which includes also AzureKeyVault
+        //Create final ConfigurationRoot
         var builder = new ConfigurationBuilder()
+                            .AddUserSecrets("e883ea2f-2433-410f-b47c-30a8237e4512", reloadOnChange: true)
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile(Appsettingfile, optional: true, reloadOnChange: true);
 
@@ -61,13 +63,12 @@ public sealed class csAppConfig
             i.DbLocation = _dbSetActive.DbLocation;
             i.DbServer = _dbSetActive.DbServer;
         });
-        
+
         //get user password details
         _configuration.Bind("PasswordSaltDetails", _passwordSaltDetails);
 
         //get jwt configurations
         _configuration.Bind("JwtConfig", _jwtConfig);
-
     }
 
     public static IConfigurationRoot ConfigurationRoot
@@ -99,9 +100,9 @@ public sealed class csAppConfig
             }
         }
     }
-    public static DbLoginDetail DbLoginDetails (string DbLogin)
+    public static DbLoginDetail DbLoginDetails(string DbUserLogin)
     {
-        if (string.IsNullOrEmpty(DbLogin) || string.IsNullOrWhiteSpace(DbLogin))
+        if (string.IsNullOrEmpty(DbUserLogin) || string.IsNullOrWhiteSpace(DbUserLogin))
             throw new ArgumentNullException();
 
         lock (instanceLock)
@@ -111,7 +112,7 @@ public sealed class csAppConfig
                 _instance = new csAppConfig();
             }
 
-            var conn = _dbSetActive.DbLogins.First(m => m.DbUserLogin.Trim().ToLower() == DbLogin.Trim().ToLower());
+            var conn = _dbSetActive.DbLogins.First(m => m.DbUserLogin.Trim().ToLower() == DbUserLogin.Trim().ToLower());
             if (conn == null)
                 throw new ArgumentException("Database connection not found");
 
@@ -162,7 +163,7 @@ public class DbSetDetail
 public class DbLoginDetail
 {
     //set after reading in the active DbSet
-    
+
     public string DbLocation { get; set; } = null;
     public string DbServer { get; set; } = null;
 
@@ -194,5 +195,3 @@ public class JwtConfig
     public bool RequireExpirationTime { get; set; }
     public bool ValidateLifetime { get; set; } = true;
 }
-
-

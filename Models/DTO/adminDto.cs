@@ -3,17 +3,17 @@ namespace Models.DTO
 {
     public class adminInfoDbDto
     {
-        public int nrSeededFriends { get; set; } = 0;
-        public int nrUnseededFriends { get; set; } = 0;
+        public int nrSeededAttractions { get; set; } = 0;
+        public int nrUnseededAttractions { get; set; } = 0;
 
-        public int nrSeededAddresses { get; set; } = 0;
-        public int nrUnseededAddresses { get; set; } = 0;
+        public int nrSeededComments { get; set; } = 0;
+        public int nrUnseededComments { get; set; } = 0;
 
-        public int nrSeededPets { get; set; } = 0;
-        public int nrUnseededPets { get; set; } = 0;
+        public int nrSeededCities { get; set; } = 0;
+        public int nrUnseededCities { get; set; } = 0;
 
-        public int nrSeededQuotes { get; set; } = 0;
-        public int nrUnseededQuotes { get; set; } = 0;
+        public int nrSeededUsers { get; set; } = 0;
+        public int nrUnseededUsers { get; set; } = 0;
     }
 }
 

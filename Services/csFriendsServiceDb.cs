@@ -7,10 +7,10 @@ using Models.DTO;
 
 namespace Services
 {
-    public class csFriendsServiceDb : IFriendsService
+    public class csAttractionsServiceDb : IAttractionService
     {
-        private csFriendDbRepos _repo = null;
-        private ILogger<csFriendsServiceDb> _logger = null;
+        private csAttractionsDbRepos _repo = null;
+        private ILogger<csAttractionsServiceDb> _logger = null;
 
         #region only for layer verification
         private Guid _guid = Guid.NewGuid();
@@ -18,24 +18,24 @@ namespace Services
 
         public string InstanceHello => _instanceHello;
  
-        static public string Hello { get; } = $"Hello from namespace {nameof(Services)}, class {nameof(csFriendsServiceDb)}" +
+        static public string Hello { get; } = $"Hello from namespace {nameof(Services)}, class {nameof(csAttractionsDbRepos)}" +
 
             // added after project references is setup
-            $"\n   - {csFriendDbRepos.Hello}" +
+            $"\n   - {csAttractionsDbRepos.Hello}" +
             $"\n   - {csMainDbContext.Hello}";
         #endregion
 
         #region constructors
-        public csFriendsServiceDb(ILogger<csFriendsServiceDb> logger)
+        public csAttractionsServiceDb(ILogger<csAttractionsServiceDb> logger)
         {
             //only for layer verification
             _instanceHello = $"Hello from class {this.GetType()} with instance Guid {_guid}. ";
 
-            _logger = logger;
+            _logger = (ILogger<csAttractionsServiceDb>)logger;
             _logger.LogInformation(_instanceHello);
         }
 
-        public csFriendsServiceDb(csFriendDbRepos repo, ILogger<csFriendsServiceDb> logger)
+        public csAttractionsServiceDb(csAttractionsDbRepos repo, ILogger<csAttractionsServiceDb> logger)
         {
             //only for layer verification
             _instanceHello = $"Hello from class {this.GetType()} with instance Guid {_guid}. " +
@@ -55,31 +55,33 @@ namespace Services
         public Task<adminInfoDbDto> SeedAsync(loginUserSessionDto usr, int nrOfItems) => _repo.SeedAsync(usr, nrOfItems);
         public Task<adminInfoDbDto> RemoveSeedAsync(loginUserSessionDto usr, bool seeded) => _repo.RemoveSeedAsync(usr, seeded);
 
-        public Task<List<IFriend>> ReadFriendsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadFriendsAsync(usr, seeded, flat, filter, pageNumber, pageSize);
-        public Task<IFriend> ReadFriendAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadFriendAsync(usr, id, flat);
-        public Task<IFriend> DeleteFriendAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteFriendAsync(usr, id);
-        public Task<IFriend> UpdateFriendAsync(loginUserSessionDto usr, csFriendCUdto item) => _repo.UpdateFriendAsync(usr, item);
-        public Task<IFriend> CreateFriendAsync(loginUserSessionDto usr, csFriendCUdto item) => _repo.CreateFriendAsync(usr, item);
+        public Task<List<IAttraction>> ReadAttractionsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize, bool hasComment) => _repo.ReadAttractionsAsync(usr, seeded, flat, filter, pageNumber, pageSize, hasComment);
+        public Task<List<IAttraction>> ReadAttractionsWithCommentsAsync(loginUserSessionDto usr, bool seeded, string filter, int pageNumber, int pageSize, bool hasComment) => _repo.ReadAttractionsWithCommentsAsync(usr, seeded, filter, pageNumber, pageSize, hasComment);
 
-        public Task<List<IAddress>> ReadAddressesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadAddressesAsync(usr, seeded, flat, filter, pageNumber, pageSize);
-        public Task<IAddress> ReadAddressAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadAddressAsync(usr, id, flat);
-        public Task<IAddress> DeleteAddressAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteAddressAsync(usr, id);
-        public Task<IAddress> UpdateAddressAsync(loginUserSessionDto usr, csAddressCUdto item) => _repo.UpdateAddressAsync(usr, item);
-        public Task<IAddress> CreateAddressAsync(loginUserSessionDto usr, csAddressCUdto item) => _repo.CreateAddressAsync(usr, item);
+        public Task<IAttraction> ReadAttractionAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadAttractionAsync(usr, id, flat);
+        public Task<IAttraction> DeleteAttractionAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteAttractionAsync(usr, id);
+        public Task<IAttraction> UpdateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item) => _repo.UpdateAttractionAsync(usr, item);
+        public Task<IAttraction> CreateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item) => _repo.CreateAttractionAsync(usr, item);
 
-        public Task<List<IQuote>> ReadQuotesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadQuotesAsync(usr, seeded, flat, filter, pageNumber, pageSize);
-        public Task<IQuote> ReadQuoteAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadQuoteAsync(usr, id, flat);
-        public Task<IQuote> DeleteQuoteAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteQuoteAsync(usr, id);
-        public Task<IQuote> UpdateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item) => _repo.UpdateQuoteAsync(usr, item);
-        public Task<IQuote> CreateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item) => _repo.CreateQuoteAsync(usr, item);
+        public Task<List<IComment>> ReadCommentsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadCommentsAsync(usr, seeded, flat, filter, pageNumber, pageSize);
+        public Task<IComment> ReadCommentAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadCommentAsync(usr, id, flat);
+        public Task<List<IComment>> ReadCommentByUserAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadCommentByUserAsync(usr, id, flat);
+        public Task<IComment> DeleteCommentAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteCommentAsync(usr, id);
+        public Task<IComment> UpdateCommentAsync(loginUserSessionDto usr, csCommentCUdto item) => _repo.UpdateCommentAsync(usr, item);
+        public Task<IComment> CreateCommentAsync(loginUserSessionDto usr, csCommentCUdto item) => _repo.CreateCommentAsync(usr, item);
 
-        public Task<List<IPet>> ReadPetsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadPetsAsync(usr, seeded, flat, filter, pageNumber, pageSize);
-        public Task<IPet> ReadPetAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadPetAsync(usr, id, flat);
-        public Task<IPet> DeletePetAsync(loginUserSessionDto usr, Guid id) => _repo.DeletePetAsync(usr, id);
-        public Task<IPet> UpdatePetAsync(loginUserSessionDto usr, csPetCUdto item) => _repo.UpdatePetAsync(usr, item);
-        public Task<IPet> CreatePetAsync(loginUserSessionDto usr, csPetCUdto item) => _repo.CreatePetAsync(usr, item);
+        public Task<List<ICity>> ReadCitiesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadCitiesAsync(usr, seeded, flat, filter, pageNumber, pageSize);
+        public Task<ICity> ReadCityAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadCityAsync(usr, id, flat);
+        public Task<ICity> DeleteCityAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteCityAsync(usr, id);
+        public Task<ICity> UpdateCityAsync(loginUserSessionDto usr, csCityCUdto item) => _repo.UpdateCityAsync(usr, item);
+        public Task<ICity> CreateCityAsync(loginUserSessionDto usr, csCityCUdto item) => _repo.CreateCityAsync(usr, item);
+
+        public Task<List<IUser>> ReadUsersAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _repo.ReadUsersAsync(usr, seeded, flat, filter, pageNumber, pageSize);
+        public Task<IUser> ReadUserAsync(loginUserSessionDto usr, Guid id, bool flat) => _repo.ReadUserAsync(usr, id, flat);
+        public Task<IUser> DeleteUserAsync(loginUserSessionDto usr, Guid id) => _repo.DeleteUserAsync(usr, id);
+        public Task<IUser> UpdateUserAsync(loginUserSessionDto usr, csUserCUdto item) => _repo.UpdateUserAsync(usr, item);
+        public Task<IUser> CreateUserAsync(loginUserSessionDto usr, csUserCUdto item) => _repo.CreateUserAsync(usr, item);
         #endregion
-
 
         #region The non-Async methods are not implemented using DbRepos
         public gstusrInfoAllDto Info => throw new NotImplementedException();
@@ -87,7 +89,7 @@ namespace Services
         public adminInfoDbDto Seed(loginUserSessionDto usr, int nrOfItems) => throw new NotImplementedException();
         public adminInfoDbDto RemoveSeed(loginUserSessionDto usr, bool seeded) => throw new NotImplementedException();
 
-        public List<IFriend> ReadFriends(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
+        public List<IAttraction> ReadAttractions(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
         #endregion
     }
 }

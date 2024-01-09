@@ -22,7 +22,7 @@ namespace AppWebApi.Controllers
     [Route("api/[controller]/[action]")]
     public class GuestController : Controller
     {
-        IFriendsService _friendService = null;
+        IAttractionService _attractionService = null;
         ILoginService _loginService = null;
         ILogger<GuestController> _logger = null;
 
@@ -31,7 +31,10 @@ namespace AppWebApi.Controllers
         [ActionName("Info")]
         [ProducesResponseType(200, Type = typeof(gstusrInfoDbDto))]
         public async Task<IActionResult> Info()
-          => BadRequest("Not implemented");
+        {
+            var info = await _attractionService.InfoAsync;
+            return Ok(info);
+        }
 
 
         //POST: api/Login/LoginUser
@@ -40,8 +43,21 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(200, Type = typeof(loginUserSessionDto))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> LoginUser([FromBody] loginCredentialsDto userCreds)
-          => BadRequest("Not implemented");
+        {
+            _logger.LogInformation("LoginUser initiated");
 
+            try
+            {
+                var _usr = await _loginService.LoginUserAsync(userCreds);
+                _logger.LogInformation($"{_usr.UserName} logged in");
+                return Ok(_usr);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Login Error: {ex.Message}");
+                return BadRequest($"Login Error: {ex.Message}");
+            }
+        }
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             base.OnActionExecuting(context);
@@ -53,15 +69,15 @@ namespace AppWebApi.Controllers
         {
             _friendService = friendService;
             _logger = logger;
-        }
-        public GuestController(IFriendsService friendService, ILoginService loginService, ILogger<GuestController> logger)
+        }*/
+        public GuestController(IAttractionService attractionService, ILoginService loginService, ILogger<GuestController> logger)
         {
-            _friendService = friendService;
+            _attractionService = attractionService;
             _loginService = loginService;
 
             _logger = logger;
         }
-        */
+        
         #endregion
     }
 }

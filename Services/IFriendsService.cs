@@ -4,7 +4,7 @@ using Models.DTO;
 
 namespace Services
 {
-    public interface IFriendsService
+    public interface IAttractionService
 	{
         //To test the overall layered structure
         public string InstanceHello { get; }
@@ -14,7 +14,7 @@ namespace Services
         public adminInfoDbDto RemoveSeed(loginUserSessionDto usr, bool seeded);
         public adminInfoDbDto Seed(loginUserSessionDto usr, int nrOfItems);
 
-        public List<IFriend> ReadFriends(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
+        public List<IAttraction> ReadAttractions(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
 
 
         //Full set of async methods
@@ -22,29 +22,32 @@ namespace Services
         public Task<adminInfoDbDto> SeedAsync(loginUserSessionDto usr, int nrOfItems);
         public Task<adminInfoDbDto> RemoveSeedAsync(loginUserSessionDto usr, bool seeded);
 
-        public Task<List<IFriend>> ReadFriendsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
-        public Task<IFriend> ReadFriendAsync(loginUserSessionDto usr, Guid id, bool flat);
-        public Task<IFriend> DeleteFriendAsync(loginUserSessionDto usr, Guid id);
-        public Task<IFriend> UpdateFriendAsync(loginUserSessionDto usr, csFriendCUdto item);
-        public Task<IFriend> CreateFriendAsync(loginUserSessionDto usr, csFriendCUdto item);
+        public Task<List<IAttraction>> ReadAttractionsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize, bool hasComment);
+        public Task<List<IAttraction>> ReadAttractionsWithCommentsAsync(loginUserSessionDto usr, bool seeded, string filter, int pageNumber, int pageSize, bool hasComment);
 
-        public Task<List<IAddress>> ReadAddressesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
-        public Task<IAddress> ReadAddressAsync(loginUserSessionDto usr, Guid id, bool flat);
-        public Task<IAddress> DeleteAddressAsync(loginUserSessionDto usr, Guid id);
-        public Task<IAddress> UpdateAddressAsync(loginUserSessionDto usr, csAddressCUdto item);
-        public Task<IAddress> CreateAddressAsync(loginUserSessionDto usr, csAddressCUdto item);
+        public Task<IAttraction> ReadAttractionAsync(loginUserSessionDto usr, Guid id, bool flat);
+        public Task<IAttraction> DeleteAttractionAsync(loginUserSessionDto usr, Guid id);
+        public Task<IAttraction> UpdateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item);
+        public Task<IAttraction> CreateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item);
 
-        public Task<List<IQuote>> ReadQuotesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
-        public Task<IQuote> ReadQuoteAsync(loginUserSessionDto usr, Guid id, bool flat);
-        public Task<IQuote> DeleteQuoteAsync(loginUserSessionDto usr, Guid id);
-        public Task<IQuote> UpdateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item);
-        public Task<IQuote> CreateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item);
+        public Task<List<IComment>> ReadCommentsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
+        public Task<IComment> ReadCommentAsync(loginUserSessionDto usr, Guid id, bool flat);
+        public Task<List<IComment>> ReadCommentByUserAsync(loginUserSessionDto usr, Guid id, bool flat);
+        public Task<IComment> DeleteCommentAsync(loginUserSessionDto usr, Guid id);
+        public Task<IComment> UpdateCommentAsync(loginUserSessionDto usr, csCommentCUdto item);
+        public Task<IComment> CreateCommentAsync(loginUserSessionDto usr, csCommentCUdto item);
 
-        public Task<List<IPet>> ReadPetsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
-        public Task<IPet> ReadPetAsync(loginUserSessionDto usr, Guid id, bool flat);
-        public Task<IPet> DeletePetAsync(loginUserSessionDto usr, Guid id);
-        public Task<IPet> UpdatePetAsync(loginUserSessionDto usr, csPetCUdto item);
-        public Task<IPet> CreatePetAsync(loginUserSessionDto usr, csPetCUdto item);
+        public Task<List<ICity>> ReadCitiesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
+        public Task<ICity> ReadCityAsync(loginUserSessionDto usr, Guid id, bool flat);
+        public Task<ICity> DeleteCityAsync(loginUserSessionDto usr, Guid id);
+        public Task<ICity> UpdateCityAsync(loginUserSessionDto usr, csCityCUdto item);
+        public Task<ICity> CreateCityAsync(loginUserSessionDto usr, csCityCUdto item);
+
+        public Task<List<IUser>> ReadUsersAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize);
+        public Task<IUser> ReadUserAsync(loginUserSessionDto usr, Guid id, bool flat);
+        public Task<IUser> DeleteUserAsync(loginUserSessionDto usr, Guid id);
+        public Task<IUser> UpdateUserAsync(loginUserSessionDto usr, csUserCUdto item);
+        public Task<IUser> CreateUserAsync(loginUserSessionDto usr, csUserCUdto item);
     }
 }
 

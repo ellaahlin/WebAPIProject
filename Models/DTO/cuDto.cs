@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Metrics;
+using System.Net;
 using System.Reflection.Emit;
 using System.Xml.Linq;
 
@@ -10,93 +11,77 @@ namespace Models.DTO
     //for a specific purpose.
 
     //These DTO are simplistic and used to Update and Create objects in the database
-    public class csFriendCUdto
+    public class csAttractionCUdto
     {
-        public virtual Guid? FriendId { get; set; }
+        public virtual Guid? AttractionID { get; set; }
+        public virtual string AttractionName { get; set; }
+        public virtual List<Guid> CommentID { get; set; } = null;
+        public virtual Guid CityID { get; set; }
+        public virtual string Category { get; set; }
+        public virtual string Title { get; set; }
+        public virtual string Description { get; set; }
 
-        public virtual string FirstName { get; set; }
-        public virtual string LastName { get; set; }
 
-        public virtual string Email { get; set; }
-
-        public DateTime? Birthday { get; set; } = null;
-
-        public virtual Guid? AddressId { get; set; } = null;
-
-        public virtual List<Guid> PetsId { get; set; } = null;
-
-        public virtual List<Guid> QuotesId { get; set; } = null;
-
-        public csFriendCUdto() { }
-        public csFriendCUdto(IFriend org)
-        {
-            FriendId = org.FriendId;
-            FirstName = org.FirstName;
-            LastName = org.LastName;
-            Email = org.Email;
-            Birthday = org.Birthday;
-
-            AddressId = org?.Address?.AddressId;
-            PetsId = org.Pets?.Select(i => i.PetId).ToList();
-            QuotesId = org.Quotes?.Select(i => i.QuoteId).ToList();
+        public csAttractionCUdto() { }
+        public csAttractionCUdto(IAttraction org)
+        { 
+            AttractionID = org.AttractionID;
+            AttractionName = org.AttractionName;
+            Category = org.Category;
+            Title = org.Title;
+            Description = org.Description;
+            CommentID = org.Comments?.Select(i => i.CommentID).ToList();
+            CityID = org.City.CityID;
         }
     }
 
-    public class csAddressCUdto
+    public class csCityCUdto
     {
-        public virtual Guid? AddressId { get; set; }
+        public virtual Guid CityID { get; set; }
 
-        public virtual string StreetAddress { get; set; }
-        public virtual int ZipCode { get; set; }
-        public virtual string City { get; set; }
+        public virtual string CityName { get; set; }
         public virtual string Country { get; set; }
 
-        public csAddressCUdto() { }
-        public csAddressCUdto(IAddress org)
+        public csCityCUdto() { }
+        public csCityCUdto(ICity org)
         {
-            AddressId = org.AddressId;
-            StreetAddress = org.StreetAddress;
-            ZipCode = org.ZipCode;
-            City = org.City;
+            CityID = org.CityID;
+            CityName = org.CityName;
             Country = org.Country;
         }
     }
 
-    public class csPetCUdto
+    public class csCommentCUdto
     {
-        //cannot be nullable as a Pets has to have an owner even when created
-        public virtual Guid FriendId { get; set; }
+        public virtual Guid AttractionId { get; set; }
+        public virtual Guid? CommentID { get; set; }
+        public virtual string Comment { get; set; }
 
-        public virtual Guid? PetId { get; set; }
-
-        public virtual enAnimalKind Kind { get; set; }
-        public virtual string Name { get; set; }
-        public enAnimalMood Mood { get; set; }
-
-        public csPetCUdto() { }
-        public csPetCUdto(IPet org)
+        public csCommentCUdto() { }
+        public csCommentCUdto(IComment org)
         {
-            FriendId = org.Friend.FriendId;
-
-            PetId = org.PetId;
-            Kind = org.Kind;
-            Name = org.Name;
-            Mood = org.Mood;
+            AttractionId = org.Attraction.AttractionID;
+            CommentID = org.CommentID;
+            Comment = org.Comment;
         }
     }
-    public class csQuoteCUdto
+
+    public class csUserCUdto
     {
-        public virtual Guid? QuoteId { get; set; }
-        public virtual string Quote { get; set; }
-        public virtual string Author { get; set; }
+        public virtual List<Guid> CommentID { get; set; } = null;
+        public virtual Guid? UserID { get; set; }
+        public virtual string FirstName { get; set; }
+        public virtual string LastName { get; set; }
+        public virtual string Email { get; set; }
 
-        public csQuoteCUdto() { }
-        public csQuoteCUdto(IQuote org)
+        public csUserCUdto() { }
+        public csUserCUdto(IUser org)
         {
-            QuoteId = org.QuoteId;
-
-            Quote = org.Quote;
-            Author = org.Author;
+            CommentID = org.Comments.Select(i => i.CommentID).ToList();
+            UserID = org.UserId;
+            FirstName = org.FirstName;
+            LastName = org.LastName;
+            Email = org.Email;
         }
     }
 }

@@ -16,13 +16,15 @@ namespace AppWebApi.Controllers
 {
     //Now valid for all methods, You cannot access this controller without being logged in
     //can place also on methods
+    /*[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme,
+            Policy = null, Roles = "supusr")]*/
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class AdminController : Controller
     {
         loginUserSessionDto _usr = null;
 
-        IFriendsService _friendService = null;
+        IAttractionService _attractionsService = null;
         ILoginService _loginService = null;
         ILogger<AdminController> _logger;
 
@@ -32,43 +34,82 @@ namespace AppWebApi.Controllers
         [ProducesResponseType(200, Type = typeof(adminInfoDbDto))]
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> Seed(string count)
-           => BadRequest("Not implemented");
+        {
+            if (!int.TryParse(count, out int _count))
+            {
+                return BadRequest("count format error");
+            }
+
+            adminInfoDbDto _info = await _attractionsService.SeedAsync(_usr, _count);
+            return Ok(_info);
+        }
 
         //GET: api/admin/removeseed
         [HttpGet()]
         [ActionName("RemoveSeed")]
         [ProducesResponseType(200, Type = typeof(adminInfoDbDto))]
         public async Task<IActionResult> RemoveSeed(string seeded = "true")
-           => BadRequest("Not implemented");
+        {
+            if (!bool.TryParse(seeded, out bool _seeded))
+            {
+                return BadRequest("count format error");
+            }
+
+            try
+            {
+                adminInfoDbDto _info = await _attractionsService.RemoveSeedAsync(_usr, _seeded);
+                return Ok(_info);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error: {ex.Message}");
+            }
+        }
 
         //GET: api/admin/seeduser?users={count}&superusers={count}
         [HttpGet()]
         [ActionName("SeedUsers")]
-        [ProducesResponseType(200, Type = typeof(usrInfoDto))]
+        [ProducesResponseType(200, Type = typeof(int))]
         [ProducesResponseType(400, Type = typeof(string))]
-        public async Task<IActionResult> SeedUsers(string countUsr = "32", string countSupUsr = "2")
-           => BadRequest("Not implemented");
+        public async Task<IActionResult> SeedUsers(string countUsr)
+        {
+            if (!int.TryParse(countUsr, out int _countUsr))
+            {
+                return BadRequest("count format error");
+            }
+            try
+            {
+                int _info = await _loginService.SeedUsersAsync(_countUsr);
+                return Ok(_info);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error: {ex.Message}");
+            }
+        }
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            //var _token = HttpContext.GetTokenAsync("access_token").Result;
+            //_usr = csJWTService.DecodeToken(_token);
             base.OnActionExecuting(context);
         }
 
         #region constructors
-        /*
-        public AdminController(IFriendsService friendService, ILogger<AdminController> logger)
+        
+        public AdminController(IAttractionService attractionService, ILogger<AdminController> logger, ILoginService loginService)
         {
-            _friendService = friendService;
+            _attractionsService = attractionService;
             _logger = logger;
-        }
-        public AdminController(IFriendsService friendService, ILoginService loginService, ILogger<AdminController> logger)
+            _loginService = loginService;
+        }/*
+        public AdminController(IAttractionService attractionService, ILoginService loginService, ILogger<AdminController> logger)
         {
-            _friendService = friendService;
+            _attractionsService = attractionService;
             _loginService = loginService;
 
             _logger = logger;
-        }
-        */
+        }*/
         #endregion
     }
 }

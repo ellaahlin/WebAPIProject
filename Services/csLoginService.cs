@@ -37,10 +37,28 @@ public class csLoginService : ILoginService
     }
     #endregion
 
-    public Task<usrInfoDto> SeedAsync(int nrOfUsers, int nrOfSuperUsers) => _repo.SeedAsync(nrOfUsers, nrOfSuperUsers);
+    public Task<int> SeedUsersAsync(int nrOfUsers) => _repo.SeedUsersAsync(nrOfUsers);
 
     public async Task<loginUserSessionDto> LoginUserAsync(loginCredentialsDto usrCreds)
-           => throw new NotImplementedException();
+    {
+        try
+        {
+            var _usrSession = await _repo.LoginUserAsync(usrCreds);
+
+            //Successful login. Create a JWT token
+            _usrSession.JwtToken = csJWTService.CreateJwtUserToken(_usrSession);
+
+            //For test only, decypt the JWT token and compare.
+            var _tmpUserSession = csJWTService.DecodeToken(_usrSession.JwtToken.EncryptedToken);
+
+            return _usrSession;
+        }
+        catch
+        {
+            //if there was an error during login, simply pass it on.
+            throw;
+        }
+    }
 
 }
 

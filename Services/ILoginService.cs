@@ -5,7 +5,7 @@ namespace Services
 {
 	public interface ILoginService
 	{
-        public Task<usrInfoDto> SeedAsync(int nrOfUsers, int nrOfSuperUsers);
+        public Task<int> SeedUsersAsync(int nrOfUsers);
         public Task<loginUserSessionDto> LoginUserAsync(loginCredentialsDto usrCreds);
     }
 }

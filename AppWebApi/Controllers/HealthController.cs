@@ -18,8 +18,8 @@ namespace AppWebApi.Controllers
     [Route("[controller]/[action]")]
     public class HealthController : Controller
     {
-        IFriendsService _service = null;
-        ILogger<FriendsController> _logger = null;
+        IAttractionService _service = null;
+        ILogger<AttractionsController> _logger = null;
 
         // GET: health/hello
         [HttpGet()]
@@ -29,10 +29,10 @@ namespace AppWebApi.Controllers
         {
             //to verify the layers are accessible
             string sRet = $"\nLayer access:\n{csAppConfig.Hello}" +
-                $"\n{csFriend.Hello}" +
+                $"\n{csAttraction.Hello}" +
                 $"\n{csLoginService.Hello}" +
                 $"\n{csJWTService.Hello}" +
-                $"\n{csFriendsServiceModel.Hello}";
+                $"\n{csAttractionsServiceModel.Hello}";
 
 
             //to verify connection strings can be read from appsettings.json
@@ -49,14 +49,31 @@ namespace AppWebApi.Controllers
             return Ok(sRet);
         }
 
+        //GET: health/log
+        [HttpGet()]
+        [ActionName("Log")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<csLogMessage>))]
+        public async Task<IActionResult> Log([FromServices] ILoggerProvider _loggerProvider)
+        {
+            //Note the way to get the LoggerProvider, not the logger from Services via DI
+            if (_loggerProvider is csInMemoryLoggerProvider cl)
+            {
+                return Ok(await cl.MessagesAsync);
+            }
+            return Ok("No messages in log");
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            base.OnActionExecuting(context);
+        }
+
         #region constructors
-        /*
-        public HealthController(IFriendsService service, ILogger<FriendsController> logger)
+        public HealthController(IAttractionService service, ILogger<AttractionsController> logger)
         {
             _service = service;
             _logger = logger;
         }
-        */
         #endregion
     }
 }

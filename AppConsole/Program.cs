@@ -40,12 +40,37 @@ class Program
         //by runnign the App within a host
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
+        #region Dependency Injection of Logger
+        //Add your own Services to use with DI
+        builder.Services.AddSingleton<ILoggerProvider, csInMemoryLoggerProvider>();
+        #endregion
+
+        #region Dependency Injection
+        //DI injects the DbRepos into csFriendService
+        builder.Services.AddScoped<csAttractionsDbRepos>();
+
+        //builder.Services.AddSingleton<IFriendsService, csFriendsServiceModel>();
+        builder.Services.AddScoped<IAttractionService, csAttractionsServiceDb>();
+        #endregion
+
+
         //Build the host
         using IHost host = builder.Build();
 
         #region To be removed for the real application
         Verification(host);
         #endregion
+
+        #region seeding the model
+        var attractionService = host.Services.CreateScope()
+            .ServiceProvider.GetRequiredService<IAttractionService>();
+
+        await AttractionServiceSnapshot(attractionService);
+        await AttractionServiceInfo(attractionService);
+        #endregion
+
+        //Terminate the host and the Application properly
+        await host.RunAsync();
 
         //Terminate the host and the Application properly
         await host.RunAsync();
@@ -60,19 +85,20 @@ class Program
         //to verify the layers are accessible
         Console.WriteLine("\nLayer access:");
         Console.WriteLine(csAppConfig.Hello);
-        Console.WriteLine(csFriend.Hello);
+        Console.WriteLine(csAttraction.Hello);
 
-        Console.WriteLine(csFriendDbM.Hello);
+        Console.WriteLine(csAttractionDbM.Hello);
         Console.WriteLine(csMainDbContext.Hello);
-        Console.WriteLine(csFriendDbRepos.Hello);
+        Console.WriteLine(csAttractionsDbRepos.Hello);
 
         Console.WriteLine(csLoginService.Hello);
         Console.WriteLine(csJWTService.Hello);
-        Console.WriteLine(csFriendsServiceModel.Hello);
-        Console.WriteLine(csFriendsServiceDb.Hello);
+        Console.WriteLine(csAttractionsServiceModel.Hello);
+        Console.WriteLine(csAttractionsServiceDb.Hello);
+
 
         //to verify connection strings can be read from appsettings.json
-        Console.WriteLine($"\nDbConnections:\nDbLocation: {csAppConfig.DbSetActive.DbLocation}"+
+        Console.WriteLine($"\nDbConnections:\nDbLocation: {csAppConfig.DbSetActive.DbLocation}" +
             $"\nDbServer: {csAppConfig.DbSetActive.DbServer}");
         Console.WriteLine("DbUserLogins in DbSet:");
         foreach (var item in csAppConfig.DbSetActive.DbLogins)
@@ -81,47 +107,84 @@ class Program
                               $"\n   DbConnection: {item.DbConnection}\n   ConString: <secret>");
         }
 
+        //to verify usersecret access
+        Console.WriteLine($"\nUser secrets:\n{csAppConfig.SecretMessage}");
+
+        Console.WriteLine($"\nDependency Injection:");
+        Console.WriteLine($"Service Scope 1:");
+        using (IServiceScope serviceScope = host.Services.CreateAsyncScope())
+        {
+            IServiceProvider provider = serviceScope.ServiceProvider;
+
+            IAttractionService attractionsService1 = provider.GetRequiredService<IAttractionService>();
+            Console.WriteLine($"\nService instance 1:\n{attractionsService1.InstanceHello}\n");
+
+            IAttractionService attractionsService2 = provider.GetRequiredService<IAttractionService>();
+            Console.WriteLine($"\nServices instance 2:\n{attractionsService2.InstanceHello}\n");
+        }
+
+        Console.WriteLine($"\nService Scope 2:");
+        using (IServiceScope serviceScope = host.Services.CreateAsyncScope())
+        {
+            IServiceProvider provider = serviceScope.ServiceProvider;
+
+            IAttractionService attractionsService1 = provider.GetRequiredService<IAttractionService>();
+            Console.WriteLine($"\nService instance  1:\n{attractionsService1.InstanceHello}\n");
+
+            IAttractionService attractionsService2 = provider.GetRequiredService<IAttractionService>();
+            Console.WriteLine($"\nServices instance 2:\n{attractionsService2.InstanceHello}\n");
+        }
+
+        Console.WriteLine($"\nCustomer Logger, InMemoryLoggerProvider:");
+        var customLoggerService = host.Services.CreateScope()
+                    .ServiceProvider.GetRequiredService<ILoggerProvider>();
+        foreach (var item in ((csInMemoryLoggerProvider)customLoggerService).Messages)
+        {
+            Console.WriteLine($"  -- {item}\n");
+        }
+
         Console.WriteLine("\nVerification end");
         Console.WriteLine("------------------\n\n");
+        Console.ReadKey();
     }
     #endregion
 
     #region used when seeding of model IFriend, IAddress, IPet, IQuote
-    private static async Task FriendServiceSnapshot(IFriendsService friendService)
+    private static async Task AttractionServiceSnapshot(IAttractionService attractionService)
     {
 
         loginUserSessionDto _usr = new loginUserSessionDto { UserRole = "sysadmin" };
 
-        var _info = await friendService.RemoveSeedAsync(_usr, true);
-        Console.WriteLine($"\n{_info.nrSeededFriends} friends removed");
+        var _info = await attractionService.RemoveSeedAsync(_usr, true);
+        Console.WriteLine($"\n{_info.nrSeededAttractions} attractions removed");
 
-        _info = await friendService.SeedAsync(_usr, _nrSeeds);
-        Console.WriteLine($"{_info.nrSeededFriends} friends seeded");
+        _info = await attractionService.SeedAsync(_usr, _nrSeeds);
+        Console.WriteLine($"{_info.nrSeededAttractions} attractions seeded");
 
-        var _list = await friendService.ReadFriendsAsync(_usr, true, false, null, 0, _readerPageSize);
-        Console.WriteLine("\nFirst 5 friends");
+        var _list = await attractionService.ReadAttractionsAsync(_usr, true, false, null, 0, _readerPageSize);
+        Console.WriteLine("\nFirst 5 attractions");
         _list.Take(5).ToList().ForEach(f => Console.WriteLine(f));
 
-        Console.WriteLine("\nLast 5 friends");
+        Console.WriteLine("\nLast 5 attractions");
         _list.TakeLast(5).ToList().ForEach(f => Console.WriteLine(f));
     }
 
-    private static async Task FriendServiceInfo(IFriendsService friendService)
+    private static async Task AttractionServiceInfo(IAttractionService attractionService)
     {
-        var info = await friendService.InfoAsync;
-        Console.WriteLine($"\nFriendServiceInfo:");
-        Console.WriteLine($"Nr of seeded friends: {info.Db.nrSeededFriends}");
-        Console.WriteLine($"Nr of unseeded friends: {info.Db.nrUnseededFriends}");
-        Console.WriteLine($"Nr of friends with address: {info.Db.nrFriendsWithAddress}");
+        var info = await attractionService.InfoAsync;
+        Console.WriteLine($"\nAttractionServiceInfo:");
+        Console.WriteLine($"Nr of seeded attractions: {info.Db.nrSeededAttractions}");
+        Console.WriteLine($"Nr of unseeded attractions: {info.Db.nrUnseededAttractions}");
+        Console.WriteLine($"Nr of attractions with comments: {info.Db.nrAttractionsWithComment}");
 
-        Console.WriteLine($"Nr of addresses: {info.Db.nrSeededAddresses}");
-        Console.WriteLine($"Nr of unseeded addresses: {info.Db.nrUnseededAddresses}");
+        Console.WriteLine($"Nr of comments: {info.Db.nrSeededComments}");
+        Console.WriteLine($"Nr of unseeded comments: {info.Db.nrUnseededComments}");
 
-        Console.WriteLine($"Nr of pets: {info.Db.nrSeededPets}");
-        Console.WriteLine($"Nr of unseeded pets: {info.Db.nrUnseededPets}");
+        Console.WriteLine($"Nr of cities: {info.Db.nrSeededCities}");
+        Console.WriteLine($"Nr of unseeded cities: {info.Db.nrSeededCities}");
 
-        Console.WriteLine($"Nr of quotes: {info.Db.nrSeededQuotes}");
-        Console.WriteLine($"Nr of unseeded quotes: {info.Db.nrUnseededQuotes}");
+        Console.WriteLine($"Nr of titles: {info.Db.nrSeededTitles}");
+        Console.WriteLine($"Nr of unseeded titles: {info.Db.nrUnseededTitles}");
         Console.WriteLine();
     }
     #endregion

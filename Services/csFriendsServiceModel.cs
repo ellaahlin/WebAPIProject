@@ -11,6 +11,8 @@ using DbContext;
 using DbRepos;
 using Services;
 using System.Linq;
+using System.Collections.Generic;
+using System.Net;
 
 //Service namespace is an abstraction of using services without detailed knowledge
 //of how the service is implemented.
@@ -23,9 +25,10 @@ namespace Services
     //Friends model (without database) OR access csFriendsServiceDbRepos
     //FriendsDbM model (with database)class csFriendsServiceDbRepos without
     //without any code change
-    public class csFriendsServiceModel : IFriendsService
+    public class csAttractionsServiceModel : IAttractionService
     {
-        private ILogger<csFriendsServiceModel> _logger = null;
+        private csAttractionsServiceModel _repo = null;
+        private ILogger<csAttractionsServiceModel> _logger = null;
         private object _locker = new object();
 
         #region only for layer verification
@@ -34,15 +37,15 @@ namespace Services
 
         public string InstanceHello => _instanceHello;
 
-        static public string Hello { get; } = $"Hello from namespace {nameof(Services)}, class {nameof(csFriendsServiceModel)}" +
+        static public string Hello { get; } = $"Hello from namespace {nameof(Services)}, class {nameof(csAttractionsServiceModel)}" +
 
             // added after project references is setup
-            $"\n   - {csFriendDbRepos.Hello}" +
+            $"\n   - {csAttractionsDbRepos.Hello}" +
             $"\n   - {csMainDbContext.Hello}";
         #endregion
 
         #region constructors
-        public csFriendsServiceModel(ILogger<csFriendsServiceModel> logger)
+        public csAttractionsServiceModel(ILogger<csAttractionsServiceModel> logger)
         {
             _logger = logger;
 
@@ -54,14 +57,25 @@ namespace Services
         }
         #endregion
 
-        private List<csFriend> _friends = new List<csFriend>();
+        private List<csAttraction> _attractions = new List<csAttraction>();
 
         public Task<adminInfoDbDto> RemoveSeedAsync(loginUserSessionDto usr, bool seeded) => Task.Run(() =>
         {
             lock (_locker) { return RemoveSeed(usr, seeded); }
         });
         public adminInfoDbDto RemoveSeed(loginUserSessionDto usr, bool seeded)
-            => throw new NotImplementedException();
+        {
+            //A bit of Linq refresh
+            var _info = new adminInfoDbDto();
+            _info.nrSeededAttractions = _attractions.Count(i => i.Seeded == seeded);
+            _info.nrSeededComments = _attractions.Where(i => i.Seeded == seeded && i.Comments != null).Distinct().Count();
+            _info.nrSeededCities = _attractions.Where(i => i.Seeded == seeded && i.City != null).Distinct().Count();
+
+            //actually remove
+            _attractions.RemoveAll(f => f.Seeded == seeded);
+
+            return _info;
+        }
 
 
         public Task<adminInfoDbDto> SeedAsync(loginUserSessionDto usr, int nrOfItems) => Task.Run(() =>
@@ -69,55 +83,99 @@ namespace Services
             lock (_locker) { return Seed(usr, nrOfItems); }
         });
         public adminInfoDbDto Seed(loginUserSessionDto usr, int nrOfItems)
-           => throw new NotImplementedException();
+        {
+            var _seeder = new csSeedGenerator();
+
+            _attractions = _seeder.ToList<csAttraction>(nrOfItems);
+
+            #region extending the seeding
+            var _comments = _seeder.ToList<csComment>(nrOfItems);
+            var _cities = _seeder.ToList<csCity>(nrOfItems);
+
+
+
+            //Now _seededquotes is always the content of the Quotes table
+
+            var _info = new adminInfoDbDto();
+            _info.nrSeededAttractions = _attractions.Count();
+            _info.nrSeededComments = _comments.Where(i => i.Comment != null).Distinct().Count();
+            _info.nrSeededCities = _cities.Count();
+
+
+            return _info;
+        }
 
         //In order to make ReadAsync it has to return a deep copy of _friends.
         //Otherwise another Task could seed or removeseed on the list while first
         //Task is working on the list. Use copy constructor pattern
-        public Task<List<IFriend>> ReadFriendsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => Task.Run(() =>
+        public Task<List<IAttraction>> ReadAttractionsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize, bool hasComment) => Task.Run(() =>
         {
             lock (_locker) {
 
                 //to create a a copy is simple using linq and copy constructor pattern
-                var list = (_friends != null) ? _friends.Select(f => new csFriend(f)).ToList<IFriend>() : null;
+                var list = (_attractions != null) ? _attractions.Select(a => new csAttraction(a)).ToList<IAttraction>() : null;
                 return list;
             }
         });
-        public List<IFriend> ReadFriends(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _friends.ToList<IFriend>();
+
+        public Task<List<IAttraction>> ReadAttractionsWithCommentsAsync(loginUserSessionDto usr, bool seeded, string filter, int pageNumber, int pageSize, bool hasComment) => Task.Run(() =>
+        {
+            lock (_locker)
+            {
+
+                //to create a a copy is simple using linq and copy constructor pattern
+                var list = (_attractions != null) ? _attractions.Select(a => new csAttraction(a)).ToList<IAttraction>() : null;
+                return list;
+            }
+        });
+        public List<IAttraction> ReadAttractions(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => _attractions.ToList<IAttraction>();
 
 
         public Task<gstusrInfoAllDto> InfoAsync => Task.Run(() =>
         {
             lock (_locker) { return Info; }
         });
-        public gstusrInfoAllDto Info
-           => throw new NotImplementedException();
+        public gstusrInfoAllDto Info => new gstusrInfoAllDto
+        {
+            Db = new gstusrInfoDbDto
+            {
+                nrSeededAttractions = _attractions.Count(i => i.Seeded),
+                nrUnseededAttractions = _attractions.Count(i => !i.Seeded),
+                nrAttractionsWithComment = _attractions.Count(f => f.Comments == null),
 
+                nrSeededComments = _attractions.Where(i => i.Seeded && i.Comments != null).Distinct().Count(),
+                nrUnseededComments = _attractions.Where(i => !i.Seeded && i.Comments != null).Distinct().Count(),
+
+                nrSeededCities = _attractions.Where(i => i.Seeded && i.City != null).Distinct().Count(),
+                nrUnseededCities = _attractions.Where(i => !i.Seeded && i.City != null).Distinct().Count(),
+            }
+        };
 
         #region not implemented
-        public Task<IFriend> ReadFriendAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
-        public Task<IFriend> DeleteFriendAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
-        public Task<IFriend> UpdateFriendAsync(loginUserSessionDto usr, csFriendCUdto item) => throw new NotImplementedException();
-        public Task<IFriend> CreateFriendAsync(loginUserSessionDto usr, csFriendCUdto item) => throw new NotImplementedException();
+        public Task<IAttraction> ReadAttractionAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
+        public Task<IAttraction> DeleteAttractionAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
+        public Task<IAttraction> UpdateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item) => throw new NotImplementedException();
+        public Task<IAttraction> CreateAttractionAsync(loginUserSessionDto usr, csAttractionCUdto item) => throw new NotImplementedException();
 
-        public Task<List<IAddress>> ReadAddressesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
-        public Task<IAddress> ReadAddressAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
-        public Task<IAddress> DeleteAddressAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
-        public Task<IAddress> UpdateAddressAsync(loginUserSessionDto usr, csAddressCUdto item) => throw new NotImplementedException();
-        public Task<IAddress> CreateAddressAsync(loginUserSessionDto usr, csAddressCUdto item) => throw new NotImplementedException();
+        public Task<List<IComment>> ReadCommentsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
+        public Task<IComment> ReadCommentAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
+        public Task<List<IComment>> ReadCommentByUserAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
+        public Task<IComment> DeleteCommentAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
+        public Task<IComment> UpdateCommentAsync(loginUserSessionDto usr, csCommentCUdto item) => throw new NotImplementedException();
+        public Task<IComment> CreateCommentAsync(loginUserSessionDto usr, csCommentCUdto item) => throw new NotImplementedException();
 
-        public Task<List<IQuote>> ReadQuotesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
-        public Task<IQuote> ReadQuoteAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
-        public Task<IQuote> DeleteQuoteAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
-        public Task<IQuote> UpdateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item) => throw new NotImplementedException();
-        public Task<IQuote> CreateQuoteAsync(loginUserSessionDto usr, csQuoteCUdto item) => throw new NotImplementedException();
+        public Task<List<ICity>> ReadCitiesAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
+        public Task<ICity> ReadCityAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
+        public Task<ICity> DeleteCityAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
+        public Task<ICity> UpdateCityAsync(loginUserSessionDto usr, csCityCUdto item) => throw new NotImplementedException();
+        public Task<ICity> CreateCityAsync(loginUserSessionDto usr, csCityCUdto item) => throw new NotImplementedException();
 
-        public Task<List<IPet>> ReadPetsAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
-        public Task<IPet> ReadPetAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
-        public Task<IPet> DeletePetAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
-        public Task<IPet> UpdatePetAsync(loginUserSessionDto usr, csPetCUdto item) => throw new NotImplementedException();
-        public Task<IPet> CreatePetAsync(loginUserSessionDto usr, csPetCUdto item) => throw new NotImplementedException();
+        public Task<List<IUser>> ReadUsersAsync(loginUserSessionDto usr, bool seeded, bool flat, string filter, int pageNumber, int pageSize) => throw new NotImplementedException();
+        public Task<IUser> ReadUserAsync(loginUserSessionDto usr, Guid id, bool flat) => throw new NotImplementedException();
+        public Task<IUser> DeleteUserAsync(loginUserSessionDto usr, Guid id) => throw new NotImplementedException();
+        public Task<IUser> UpdateUserAsync(loginUserSessionDto usr, csUserCUdto item) => throw new NotImplementedException();
+        public Task<IUser> CreateUserAsync(loginUserSessionDto usr, csUserCUdto item) => throw new NotImplementedException();
         #endregion
     }
 }
-
+#endregion
